@@ -18,7 +18,7 @@ SOURCE_DIR  := src
 TARGET := main
 
 # some included libraries (spdlog)
-INC := /usr/local/include /usr/local/bin/R/include
+INC := /usr/local/include
 INC_LIBS := $(addprefix -I,$(INC))
 
 # auto-detect source .cpp files and derive .o names
