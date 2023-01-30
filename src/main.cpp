@@ -94,19 +94,6 @@ int main() {
     if (server_recv_len > 0)
       server_recv_buf[server_recv_len] = 0;
 
-    // set into vector for parsing bytes
-    filebytes = std::vector<unsigned char>(server_recv_buf,
-                                           server_recv_buf + server_recv_len);
-
-    // print raw bytes in pairs of two
-    printf("byte 000: ");
-    for (std::uint16_t j = 0; j < filebytes.size(); j++) {
-      printf("%02x ", filebytes.at(j));
-      if (j % 8 == 7)
-        printf("\nbyte %03d: ", j);
-    }
-    printf("\n");
-
     // dynamically allocate space for the packet into appropriately sized buffer
     unsigned char packet[server_recv_len];
     memcpy(&packet, &server_recv_buf, server_recv_len);
@@ -114,28 +101,19 @@ int main() {
     // retrieve iv1, iv2
     std::uint32_t iv1;
     std::uint32_t iv2;
-    std::uint64_t iv;
 
     memcpy(&iv1, &server_recv_buf[0x40], 4);
     iv2 = iv1 ^ 0xDEADBEAF;
 
-    unsigned char bytes[8];
-    memcpy(&bytes[0], &iv2, 4);
-    memcpy(&bytes[4], &iv1, 4);
-    memcpy(&iv, &bytes[0], 8);
-
     // "Simulator Interface Packet GT7 ver 0.0
     const unsigned char key[33] = "Simulator Interface Packet GT7 v";
+    unsigned char nonce[8];
+    memcpy(&nonce[0], &iv2, 4);
+    memcpy(&nonce[4], &iv1, 4);
 
-    printf("keyc(str): %s\n", key);
-    printf("keyc(hex): %llx\n", key);
+    std::uint32_t salsa20_result = crypto_stream_salsa20_xor(server_recv_buf, packet, server_recv_len, nonce, key);
 
-    printf("iv1 (hex): %x\n", iv1);
-    printf("iv2 (hex): %x\n", iv2);
-    printf("iv  (hex): %llx\n", iv);
-
-    std::uint32_t salsa20_result = crypto_stream_salsa20_xor(server_recv_buf, packet, server_recv_len, bytes, key);
-
+    printf("decryption status: %d\n", salsa20_result);
     printf("b000: ");
     for (std::uint16_t m = 0; m < server_recv_len; m++) {
       printf("%2x ", server_recv_buf[m]);
@@ -145,7 +123,7 @@ int main() {
     printf("\n");
   }
 
-    close(client_fd);
+  close(client_fd);
 
-    return 0;
+  return 0;
 }
