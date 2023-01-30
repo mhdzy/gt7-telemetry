@@ -12,6 +12,11 @@ int main() {
   /* log all messages above DEBUG */
   spdlog::set_level(spdlog::level::debug);
 
+  /* setup libsodium library for use */
+  if (sodium_init() < 0) {
+    perror("libsodium could not initialize");
+  }
+
   /* setup control+c exit handler */
   struct sigaction sig_int_handler;
   sig_int_handler.sa_handler = SIGINT_handler;
@@ -102,6 +107,10 @@ int main() {
     }
     printf("\n");
 
+    // dynamically allocate space for the packet into appropriately sized buffer
+    unsigned char packet[server_recv_len];
+    memcpy(&packet, &server_recv_buf, server_recv_len);
+
     // retrieve iv1, iv2
     std::uint32_t iv1;
     std::uint32_t iv2;
@@ -115,21 +124,28 @@ int main() {
     memcpy(&bytes[4], &iv1, 4);
     memcpy(&iv, &bytes[0], 8);
 
-    unsigned char c_key[32];
-    std::string key("Simulator Interface Packet GT7 ver 0.0");
-    memcpy(&c_key, key.c_str(), 32);
+    // "Simulator Interface Packet GT7 ver 0.0
+    const unsigned char key[33] = "Simulator Interface Packet GT7 v";
 
-    printf("key (str): %s\n", key.c_str());
-    printf("key (hex): %x\n", key.c_str());
-    printf("keyc(str): %s\n", c_key);
-    printf("keyc(hex): %x\n", c_key);
+    printf("keyc(str): %s\n", key);
+    printf("keyc(hex): %llx\n", key);
 
     printf("iv1 (hex): %x\n", iv1);
     printf("iv2 (hex): %x\n", iv2);
     printf("iv  (hex): %llx\n", iv);
+
+    std::uint32_t salsa20_result = crypto_stream_salsa20_xor(server_recv_buf, packet, server_recv_len, bytes, key);
+
+    printf("b000: ");
+    for (std::uint16_t m = 0; m < server_recv_len; m++) {
+      printf("%2x ", server_recv_buf[m]);
+      if (m % 8 == 7)
+        printf("\nb%03d: ", m);
+    }
+    printf("\n");
   }
 
-  close(client_fd);
+    close(client_fd);
 
-  return 0;
-};
+    return 0;
+}

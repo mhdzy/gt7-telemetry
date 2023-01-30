@@ -4,7 +4,13 @@ Gran Turismo 7 telemetry livestream.
 
 ## Install
 
-This project uses the 'spdlog' library, assumed to be in `/usr/lib/include`.
+The following dependency libraries are used:
+ - spdlog
+ - libsodium
+
+For logging, `spdlog` is assumed to be in `/usr/lib/include`.
+
+For crypto, libsodium requires compilation from source.
 
 See `Makefile` for all build options.
 

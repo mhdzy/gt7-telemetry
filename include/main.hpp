@@ -18,6 +18,8 @@
 #include <iostream>
 #include <vector>
 
+#include <sodium.h>
+
 #include "spdlog/spdlog.h"
 
 #define _XOPEN_SOURCE_EXTENDED

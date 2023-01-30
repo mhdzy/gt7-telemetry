@@ -4,7 +4,7 @@ CCFLAGS := -Wall -std=c++20
 
 # need to set '-lstdc++fs' on linux, breaks macOS builds
 OS_NAME := $(shell uname -s | tr A-Z a-z)
-OS_FLAGS := -lzmq
+OS_FLAGS := -lzmq -lsodium
 ifeq ($(OS_NAME), "linux")
 	OS_FLAGS += -lstdc++fs
 endif
@@ -17,8 +17,8 @@ SOURCE_DIR  := src
 # target executable
 TARGET := main
 
-# some included libraries (spdlog)
-INC := /usr/local/include
+# some included libraries (include for spdlog, lib for libsodium)
+INC := /usr/local/include /usr/local/lib
 INC_LIBS := $(addprefix -I,$(INC))
 
 # auto-detect source .cpp files and derive .o names
