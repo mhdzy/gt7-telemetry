@@ -22,6 +22,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include "packet.hpp"
+
 #define _XOPEN_SOURCE_EXTENDED
 
 #define IP_ADDR "192.168.0.14"
@@ -30,7 +32,7 @@
 #define BUFSIZE 65535
 
 // not const since this can shrink if in batch mode
-std::uint32_t MAXPACKETS = pow(2, 2);
+std::uint32_t MAXPACKETS = pow(2, 16);
 
 void SIGINT_handler(int signal);
 

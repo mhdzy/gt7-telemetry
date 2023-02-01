@@ -67,6 +67,7 @@ int main() {
     spdlog::debug("socket bound");
   }
 
+  // TODO: make this periodic, every 10s
   std::string hb_msg = "A";
   if (sendto(client_fd, hb_msg.c_str(), hb_msg.size(), 0,
              (struct sockaddr *)&server_addr,
@@ -79,10 +80,10 @@ int main() {
 
   // main loop
   spdlog::debug("waiting to receive...");
+  std::vector<unsigned char> filebytes;
+
   printf("max packets: %d\n", MAXPACKETS);
   for (std::uint32_t i = 0; i < MAXPACKETS; i++) {
-    std::vector<unsigned char> filebytes;
-
     // receive raw bytes & fit into vector
     server_recv_len =
         recvfrom(client_fd, server_recv_buf, BUFSIZE, 0,
@@ -98,29 +99,32 @@ int main() {
     unsigned char packet[server_recv_len];
     memcpy(&packet, &server_recv_buf, server_recv_len);
 
-    // retrieve iv1, iv2
-    std::uint32_t iv1;
-    std::uint32_t iv2;
-
-    memcpy(&iv1, &server_recv_buf[0x40], 4);
-    iv2 = iv1 ^ 0xDEADBEAF;
-
-    // "Simulator Interface Packet GT7 ver 0.0
-    const unsigned char key[33] = "Simulator Interface Packet GT7 v";
+    // parse the nonce from the packet
     unsigned char nonce[8];
-    memcpy(&nonce[0], &iv2, 4);
-    memcpy(&nonce[4], &iv1, 4);
+    parse_nonce(nonce, packet);
 
-    std::uint32_t salsa20_result = crypto_stream_salsa20_xor(server_recv_buf, packet, server_recv_len, nonce, key);
+    // full key is "Simulator Interface Packet GT7 ver 0.0"
+    const unsigned char key[33] = "Simulator Interface Packet GT7 v";
 
+    std::uint32_t salsa20_result = crypto_stream_salsa20_xor(
+        server_recv_buf, packet, server_recv_len, nonce, key);
+
+    /*
     printf("decryption status: %d\n", salsa20_result);
     printf("b000: ");
     for (std::uint16_t m = 0; m < server_recv_len; m++) {
       printf("%2x ", server_recv_buf[m]);
-      if (m % 8 == 7)
+      if (m % 4 == 3)
+        printf(" ");
+      if (m % 16 == 15)
         printf("\nb%03d: ", m);
     }
     printf("\n");
+    */
+
+    /* decrypt packet bytes here */
+    GT7Packet ppacket = parse_bytes(packet);
+    printf("pos (x, z): %f, %f\n", ppacket.position[0], ppacket.position[2]);
   }
 
   close(client_fd);
