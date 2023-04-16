@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -22,18 +23,38 @@
 
 #include "spdlog/spdlog.h"
 
-#include "packet.hpp"
+#include "File.hpp"
+#include "Packet.hpp"
 
 #define _XOPEN_SOURCE_EXTENDED
 
-#define IP_ADDR "192.168.0.14"
 #define SEND_PORT 33739
-#define PORT 33740
+#define BIND_PORT 33740
 #define BUFSIZE 65535
 
-// not const since this can shrink if in batch mode
-std::uint32_t MAXPACKETS = pow(2, 16);
+char *MY_IP_ADDR = (char*)"10.10.10.81";
+char *PS5_IP_ADDR = (char*)"10.10.10.14";
 
+// heartbeat delay is ~10 seconds
+// SET TO TWO SECONDS FOR DEBUG
+std::uint32_t hb_delay_micros = 2000000;
+
+std::uint32_t max_packets = pow(2, 16);
+
+std::ofstream output_file;
+
+/**
+ * @brief
+ *
+ * @param signal
+ */
 void SIGINT_handler(int signal);
 
-int main();
+/**
+ * @brief
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int main(int argc, char **argv);

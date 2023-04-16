@@ -1,12 +1,38 @@
-#include "../include/packet.hpp"
+#include "../include/Packet.hpp"
 
-/*
-  Parses the Initial Value (IV), or Nonce, from the received packet.
+std::size_t bind_socket(std::uint32_t *fd, struct sockaddr_in *addr) {
+  
+  return (0);
+}
 
-  char* nonce should be an empty 8-byte string
-  char* bytes should contain at least 0x44 bytes, with the IV values
-                located at 0x40
-*/
+/**
+ * @brief
+ *
+ * @param fd
+ * @param addr
+ * @param msg
+ * @return std::size_t
+ */
+std::size_t send_heartbeat(std::uint32_t fd, struct sockaddr_in *addr,
+                           std::string msg) {
+  std::size_t status = sendto(fd, msg.c_str(), msg.size(), 0,
+                              (struct sockaddr *)addr, sizeof(struct sockaddr));
+  if (status != msg.size()) {
+    spdlog::error("send failed!");
+    spdlog::error(std::to_string(status).c_str());
+  } else {
+    spdlog::debug("sent socket heartbeat");
+  }
+  return (status);
+}
+
+/**
+ * @brief Parses the Initial Value (IV), or Nonce, from the received packet.
+ *
+ * @param nonce an empty 8-byte string
+ * @param bytes a unsigned char array that contains at least 0x44 bytes, with
+ the IV values located at 0x40
+ */
 void parse_nonce(unsigned char *nonce, unsigned char *bytes) {
   std::uint32_t iv1;
   std::uint32_t iv2;
@@ -20,17 +46,12 @@ void parse_nonce(unsigned char *nonce, unsigned char *bytes) {
   return;
 }
 
-GT7Packet parse_bytes(unsigned char *bytes) {
+GT7Packet parse_bytes(unsigned char *bytes, std::uint32_t bytes_len) {
   GT7Packet packet;
 
-  printf("bytes at bytes: %x\n", &bytes[0x04]);
-  printf("bytes at 0x04: %f\n", &bytes[0x04]);
-  printf("size: %d\n", sizeof packet.position);
-  printf("size: %d\n", sizeof packet.position[0]);
-
-  memcpy(&(packet.position[0]), &bytes[0x04], sizeof packet.position[0]);
-  memcpy(&(packet.position[1]), &bytes[0x08], sizeof packet.position[1]);
-  memcpy(&(packet.position[2]), &bytes[0x0C], sizeof packet.position[2]);
+  memcpy(&packet.position[0], &bytes[0x04], sizeof packet.position[0]);
+  memcpy(&packet.position[1], &bytes[0x08], sizeof packet.position[1]);
+  memcpy(&packet.position[2], &bytes[0x0C], sizeof packet.position[2]);
 
   memcpy(&packet.velocity[0], &bytes[0x10], sizeof packet.velocity[0]);
   memcpy(&packet.velocity[1], &bytes[0x14], sizeof packet.velocity[1]);
