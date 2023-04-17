@@ -1,2 +1,8 @@
 # build files
 *.o
+
+# executable binary
+main
+
+# data files
+data/
