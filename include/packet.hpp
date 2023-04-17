@@ -1,6 +1,10 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <sys/socket.h>
+#include <vector>
+
+#include "spdlog/spdlog.h"
 
 struct GT7Packet {
   /*
@@ -93,6 +97,12 @@ struct GT7Packet {
   float car_code;
 };
 
+extern std::size_t bind_socket(std::uint32_t *fd, struct sockaddr_in *addr);
+
+extern std::size_t send_heartbeat(std::uint32_t fd,
+                                  struct sockaddr_in *server_addr,
+                                  std::string hb_msg = "A");
+
 extern void parse_nonce(unsigned char *nonce, unsigned char *packet);
 
-extern GT7Packet parse_bytes(unsigned char *packet);
+extern GT7Packet parse_bytes(unsigned char *packet, std::uint32_t bytes_len);

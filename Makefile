@@ -4,7 +4,8 @@ CCFLAGS := -Wall -std=c++20
 
 # need to set '-lstdc++fs' on linux, breaks macOS builds
 OS_NAME := $(shell uname -s | tr A-Z a-z)
-OS_FLAGS := -lzmq -lsodium
+# OS_FLAGS := -lzmq -lsodium
+OS_FLAGS := -lsodium
 ifeq ($(OS_NAME), "linux")
 	OS_FLAGS += -lstdc++fs
 endif
@@ -36,7 +37,11 @@ ifeq (run, $(firstword $(MAKECMDGOALS)))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-all: $(TARGET)
+all: init $(TARGET)
+
+init:
+	@mkdir -p build/
+	@mkdir -p data/
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CCFLAGS) $(OBJECTS) -g -o $@ $(INC_LIBS) $(OS_FLAGS)
