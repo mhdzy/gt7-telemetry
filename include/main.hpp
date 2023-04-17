@@ -24,16 +24,22 @@
 #include "spdlog/spdlog.h"
 
 #include "File.hpp"
-#include "Packet.hpp"
+#include "packet.hpp"
 
-#define _XOPEN_SOURCE_EXTENDED
+#ifndef _XOPEN_SOURCE_EXTENDED
+    #if defined(__APPLE__)
+        #define _XOPEN_SOURCE_EXTENDED 1
+    #elif defined(__linux__) && defined(__arm__)
+        #define _XOPEN_SOURCE_EXTENDED 1
+    #endif
+#endif
 
 #define SEND_PORT 33739
 #define BIND_PORT 33740
 #define BUFSIZE 65535
 
-char *MY_IP_ADDR = (char*)"10.10.10.81";
-char *PS5_IP_ADDR = (char*)"10.10.10.14";
+char *MY_IP_ADDR = (char*)"192.168.0.32";
+char *PS5_IP_ADDR = (char*)"192.168.0.26";
 
 // heartbeat delay is ~10 seconds
 // SET TO TWO SECONDS FOR DEBUG

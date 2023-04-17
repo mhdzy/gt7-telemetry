@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
     MY_IP_ADDR = argv[3];
   }
 
+  spdlog::info("PS5_IP_ADDR is {:s}", PS5_IP_ADDR);
+  spdlog::info("MY_IP_ADDR is {:s}", MY_IP_ADDR);
+
   /* setup some output paths */
   const std::string TRACK(argv[1]);
   const std::string DATA_PATH = "data/";
@@ -64,7 +67,7 @@ int main(int argc, char **argv) {
   /* setup our local client socket */
   memset((char *)&client_addr, 0, sizeof(client_addr));
   client_addr.sin_family = AF_INET;
-  client_addr.sin_addr.s_addr = inet_addr("192.168.0.13");
+  client_addr.sin_addr.s_addr = inet_addr(MY_IP_ADDR);
   client_addr.sin_port = htons(BIND_PORT);
 
   /* setup a send/server socket */
